@@ -1,1 +1,83 @@
+MODULE main
 
+VAR
+  support_a : {table, on_a, on_b, on_c, on_d};
+  support_b : {table, on_a, on_b, on_c, on_d};
+  support_c : {table, on_a, on_b, on_c, on_d};
+  support_d : {table, on_a, on_b, on_c, on_d};
+
+  slot_a : 0..6;
+  slot_b : 0..6;
+  slot_c : 0..6;
+  slot_d : 0..6;
+
+  action : 0..100;
+
+DEFINE
+  size_a := 1;
+  size_b := 1;
+  size_c := 2;
+  size_d := 2;
+
+  clear_a := (support_b != on_a) & (support_c != on_a) & (support_d != on_a);
+  clear_b := (support_a != on_b) & (support_c != on_b) & (support_d != on_b);
+  clear_c := (support_a != on_c) & (support_b != on_c) & (support_d != on_c);
+  clear_d := (support_a != on_d) & (support_b != on_d) & (support_c != on_d);
+
+  stable_a_on_b := size_a <= size_b;
+  stable_a_on_c := size_a <= size_c;
+  stable_a_on_d := size_a <= size_d;
+  stable_b_on_a := size_b <= size_a;
+  stable_b_on_c := size_b <= size_c;
+  stable_b_on_d := size_b <= size_d;
+  stable_c_on_d := size_c <= size_d;
+  stable_d_on_c := size_d <= size_c;
+
+-- =============================================================
+-- Estado Inicial
+-- =============================================================
+
+INIT
+  support_c = table & slot_c = 0 &
+  support_a = table & slot_a = 3 &
+  support_b = table & slot_b = 5 &
+  support_d = on_a;
+
+-- =============================================================
+-- Objetivos
+-- =============================================================
+
+DEFINE
+  goal_sf1 := (support_d = table & slot_d = 3) &
+              (support_a = on_d) &
+              (support_b = on_a) &
+              (support_c = on_b);
+
+  goal_sf2 := (support_d = table & slot_d = 3) &
+              (support_c = on_d) &
+              (support_a = on_c) &
+              (support_b = on_a);
+
+  goal_sf3 := (support_d = table & slot_d = 3) &
+              (support_c = on_d) &
+              (support_a = on_c) &
+              (support_b = table & slot_b = 5);
+
+  goal_sf4 := (support_c = table & slot_c = 0) &
+              (support_d = table & slot_d = 3) &
+              (support_a = on_c) &
+              (support_b = table & slot_b = 5);
+
+TRANS
+  next(support_a) in {table, on_b, on_c, on_d};
+  next(support_b) in {table, on_a, on_c, on_d};
+  next(support_c) in {table, on_a, on_b, on_d};
+  next(support_d) in {table, on_a, on_b, on_c};
+  next(slot_a) in 0..6;
+  next(slot_b) in 0..6;
+  next(slot_c) in 0..6;
+  next(slot_d) in 0..6;
+  next(action) in 0..100;
+
+CTLSPEC ! EF (goal_sf1 | goal_sf2 | goal_sf3 | goal_sf4);
+CTLSPEC AG !(goal_sf1 | goal_sf2 | goal_sf3 | goal_sf4);
