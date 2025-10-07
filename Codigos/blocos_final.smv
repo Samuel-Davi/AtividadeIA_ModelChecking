@@ -1,6 +1,6 @@
 -- =============================================================
---  Mundo dos Blocos com tamanhos variáveis - SITUAÇÃO 1
---  Model Checking - UFAM - Edjard Mota
+--  Mundo dos Blocos com tamanhos variáveis
+--  Model Checking - Situações 1, 2 e 3 (UFAM - Edjard Mota)
 -- =============================================================
 
 MODULE main
@@ -42,31 +42,64 @@ DEFINE
   stable_d_on_c := size_d <= size_c;
 
 -- =============================================================
---  INICIALIZAÇÃO - SITUAÇÃO 1 (S0)
+--  INICIALIZAÇÕES (uma de cada situação)
 -- =============================================================
 
-INIT
+-- Situação 1 - S0
+DEFINE sit1_init :=
+  (support_c = table & slot_c = 0 &
+   support_a = table & slot_a = 3 &
+   support_b = table & slot_b = 5 &
+   support_d = on_a);
+
+-- Situação 2 - S0
+DEFINE sit2_init :=
+  (support_c = table & slot_c = 0 &
+   support_d = table & slot_d = 3 &
+   support_a = on_c &
+   support_b = on_a);
+
+-- Situação 3 - S0
+DEFINE sit3_init :=
   (support_c = table & slot_c = 0 &
    support_a = table & slot_a = 3 &
    support_b = table & slot_b = 5 &
    support_d = on_a);
 
 -- =============================================================
--- OBJETIVOS - SITUAÇÃO 1
+-- ESCOLHA QUAL SITUAÇÃO INICIAR
+-- (Descomente apenas uma INIT)
 -- =============================================================
 
+INIT sit1_init;   -- Situação 1
+-- INIT sit2_init;   -- Situação 2
+-- INIT sit3_init;   -- Situação 3
+
+-- =============================================================
+-- GOALS
+-- =============================================================
+
+-- Situação 1:
 DEFINE
   goal_sf1 := (support_d = table & slot_d = 3) & (support_a = on_d) & (support_b = on_a) & (support_c = on_b);
   goal_sf2 := (support_d = table & slot_d = 3) & (support_c = on_d) & (support_a = on_c) & (support_b = on_a);
   goal_sf3 := (support_d = table & slot_d = 3) & (support_c = on_d) & (support_a = on_c) & (support_b = table & slot_b = 5);
   goal_sf4 := (support_c = table & slot_c = 0) & (support_d = table & slot_d = 3) & (support_a = on_c) & (support_b = table & slot_b = 5);
 
+-- Situação 2:
+DEFINE
+  goal_S5 := (support_d = table & slot_d = 3) & (support_c = on_d) & (support_a = on_c) & (support_b = table & slot_b = 1);
+
+-- Situação 3:
+DEFINE
+  goal_S7 := (support_d = table & slot_d = 3) & (support_c = table & slot_c = 0) & (support_a = on_c) & (support_b = on_a);
+
 -- Objetivo geral (todos os goals da situação 1)
 DEFINE
   goal_any_sf := goal_sf1 | goal_sf2 | goal_sf3 | goal_sf4;
 
 -- =============================================================
--- TRANSIÇÕES
+-- TRANSIÇÕES (simplificadas)
 -- =============================================================
 
 TRANS
@@ -81,17 +114,17 @@ TRANS
   next(action) in 0..100
 
 -- =============================================================
--- CTL SPECIFICATIONS - SITUAÇÃO 1
+-- CTL SPECIFICATIONS
 -- =============================================================
 
--- Verifica se é possível alcançar qualquer um dos objetivos Sf1-Sf4
+-- S0 → Sf1..Sf4
 CTLSPEC ! EF (goal_any_sf);
 
--- Verifica se é possível alcançar cada objetivo individualmente
-CTLSPEC ! EF (goal_sf1);
-CTLSPEC ! EF (goal_sf2);
-CTLSPEC ! EF (goal_sf3);
-CTLSPEC ! EF (goal_sf4);
+-- S0 → S5
+CTLSPEC ! EF (goal_S5);
 
--- Negando todos os objetivos (verifica se planos não são realizáveis)
-CTLSPEC AG !(goal_sf1 | goal_sf2 | goal_sf3 | goal_sf4);
+-- S0 → S7
+CTLSPEC ! EF (goal_S7);
+
+-- Negando todos os objetivos (planos não realizáveis)
+CTLSPEC AG !(goal_sf1 | goal_sf2 | goal_sf3 | goal_sf4 | goal_S5 | goal_S7);

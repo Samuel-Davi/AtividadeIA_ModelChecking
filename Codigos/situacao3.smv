@@ -1,3 +1,8 @@
+-- =============================================================
+--  Mundo dos Blocos com tamanhos variáveis - SITUAÇÃO 3
+--  Model Checking - UFAM - Edjard Mota
+-- =============================================================
+
 MODULE main
 
 VAR
@@ -14,16 +19,19 @@ VAR
   action : 0..100;
 
 DEFINE
+  -- Tamanhos fixos
   size_a := 1;
   size_b := 1;
   size_c := 2;
   size_d := 2;
 
+  -- Blocos livres (sem nada em cima)
   clear_a := (support_b != on_a) & (support_c != on_a) & (support_d != on_a);
   clear_b := (support_a != on_b) & (support_c != on_b) & (support_d != on_b);
   clear_c := (support_a != on_c) & (support_b != on_c) & (support_d != on_c);
   clear_d := (support_a != on_d) & (support_b != on_d) & (support_c != on_d);
 
+  -- Verificação de estabilidade (tamanho)
   stable_a_on_b := size_a <= size_b;
   stable_a_on_c := size_a <= size_c;
   stable_a_on_d := size_a <= size_d;
@@ -34,35 +42,43 @@ DEFINE
   stable_d_on_c := size_d <= size_c;
 
 -- =============================================================
--- Estado Inicial
+--  INICIALIZAÇÃO - SITUAÇÃO 3 (S0)
 -- =============================================================
 
 INIT
-  support_c = table & slot_c = 0 &
-  support_a = table & slot_a = 3 &
-  support_b = table & slot_b = 5 &
-  support_d = on_a;
+  (support_c = table & slot_c = 0 &
+   support_a = table & slot_a = 3 &
+   support_b = table & slot_b = 5 &
+   support_d = on_a);
 
 -- =============================================================
--- Objetivos
+-- OBJETIVOS - SITUAÇÃO 3
 -- =============================================================
 
 DEFINE
-  goal_S7 := (support_d = table & slot_d = 3) &
-             (support_c = table & slot_c = 0) &
-             (support_a = on_c) &
-             (support_b = on_a);
+  goal_S7 := (support_d = table & slot_d = 3) & (support_c = table & slot_c = 0) & (support_a = on_c) & (support_b = on_a);
+
+-- =============================================================
+-- TRANSIÇÕES
+-- =============================================================
 
 TRANS
-  next(support_a) in {table, on_b, on_c, on_d};
-  next(support_b) in {table, on_a, on_c, on_d};
-  next(support_c) in {table, on_a, on_b, on_d};
-  next(support_d) in {table, on_a, on_b, on_c};
-  next(slot_a) in 0..6;
-  next(slot_b) in 0..6;
-  next(slot_c) in 0..6;
-  next(slot_d) in 0..6;
-  next(action) in 0..100;
+  next(support_a) in {table, on_b, on_c, on_d} &
+  next(support_b) in {table, on_a, on_c, on_d} &
+  next(support_c) in {table, on_a, on_b, on_d} &
+  next(support_d) in {table, on_a, on_b, on_c} &
+  next(slot_a) in 0..6 &
+  next(slot_b) in 0..6 &
+  next(slot_c) in 0..6 &
+  next(slot_d) in 0..6 &
+  next(action) in 0..100
 
+-- =============================================================
+-- CTL SPECIFICATIONS - SITUAÇÃO 3
+-- =============================================================
+
+-- Verifica se é possível alcançar o objetivo S7
 CTLSPEC ! EF (goal_S7);
+
+-- Nega o objetivo S7 (verifica se plano não é realizável)
 CTLSPEC AG !(goal_S7);
